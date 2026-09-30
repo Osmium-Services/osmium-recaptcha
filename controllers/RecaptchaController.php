@@ -52,7 +52,9 @@ class RecaptchaController extends AdminController
 
         $enabled = isset($_POST['enabled']);
         $siteKey = \trim($_POST['site_key'] ?? '');
-        $secretKey = \trim($_POST['secret_key'] ?? '');
+
+        $postedSecretKey = \trim($_POST['secret_key'] ?? '');
+        $secretKey = $postedSecretKey === '' ? (string) (RecaptchaConfig::get()->secretKey ?? '') : $postedSecretKey;
 
         $scoreThreshold = (float) ($_POST['score_threshold'] ?? 0.5);
         $thresholdOutOfRange = $scoreThreshold < 0.0 || $scoreThreshold > 1.0;
