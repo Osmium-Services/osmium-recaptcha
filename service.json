@@ -1,0 +1,57 @@
+{
+    "id": "recaptcha",
+    "name": "Google reCAPTCHA v3",
+    "version": "1.0.0",
+    "description": "Spam protection for forms via Google reCAPTCHA v3 - score-based, invisible by default, admin-editable site/secret key and score threshold",
+    "author": {
+        "name": "Gavin Cox"
+    },
+    "license": "proprietary",
+
+    "requires": {
+        "osmium": ">=1.0.0",
+        "php": ">=8.1",
+        "services": []
+    },
+
+    "autoload": [
+        "models"
+    ],
+
+    "admin": {
+        "menu": {
+            "section": "Content",
+            "items": [
+                {
+                    "id": "recaptcha",
+                    "label": "reCAPTCHA",
+                    "icon": "bx bx-shield-quarter",
+                    "route": "admin/settings/recaptcha",
+                    "activePattern": "admin/settings/recaptcha",
+                    "role": null
+                }
+            ]
+        },
+        "routes": {
+            "admin/settings/recaptcha": {
+                "controller": "controllers/RecaptchaController.php",
+                "class": "Osmium\\Services\\Recaptcha\\Controllers\\RecaptchaController",
+                "method": "index",
+                "title": "Google reCAPTCHA v3"
+            }
+        }
+    },
+
+    "frontend": {
+        "themeBlocks": [
+            {
+                "hook": "head",
+                "file": "theme/recaptcha-headscript.phtml"
+            }
+        ]
+    },
+
+    "setup": {
+        "postInstallNote": "Disabled by default. Requires a Google Cloud project with billing enabled and the reCAPTCHA Enterprise/legacy API set up (free tier is 10,000 assessments/month as of April 2026 - see Cloudflare Turnstile instead for an unlimited-free alternative with an identical verify() contract). A theme must call ServiceThemeBlocks::render('head', ['recaptcha' => ..., 'site' => $site]) to load the client script, which auto-executes and writes a token into a hidden #recaptcha-token field on every form (action 'submit'). A form handler calls RecaptchaConfig::verify($_POST['recaptcha-token'] ?? '') before processing."
+    }
+}

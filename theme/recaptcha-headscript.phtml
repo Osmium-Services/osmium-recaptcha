@@ -1,0 +1,29 @@
+<?php // Included via ServiceThemeBlocks::render('head', [...]) by a real theme's own
+// <head> template. Expects $recaptcha (this service's own config) and $site.
+//
+// Contract: any <form> containing <input type="hidden" id="recaptcha-token"
+// name="recaptcha-token"> gets intercepted on submit - a fresh v3 token is
+// fetched (action "submit"), written into that field, then the form submits
+// for real. The handler then calls RecaptchaConfig::verify($_POST['recaptcha-token']). ?>
+<?php if ($recaptcha['enabled'] ?? false): ?>
+<script src="https://www.google.com/recaptcha/api.js?render=<?php echo \htmlspecialchars($recaptcha['siteKey'] ?? ''); ?>"></script>
+<script>
+(function() {
+	var siteKey = '<?php echo \htmlspecialchars($recaptcha['siteKey'] ?? '', ENT_QUOTES); ?>';
+
+	document.addEventListener('submit', function(event) {
+		var field = event.target.querySelector('#recaptcha-token');
+		if (!field || field.dataset.recaptchaDone) return;
+
+		event.preventDefault();
+		grecaptcha.ready(function() {
+			grecaptcha.execute(siteKey, { action: 'submit' }).then(function(token) {
+				field.value = token;
+				field.dataset.recaptchaDone = '1';
+				event.target.submit();
+			});
+		});
+	}, true);
+})();
+</script>
+<?php endif; ?>
