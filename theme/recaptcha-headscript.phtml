@@ -7,7 +7,7 @@
 // for real. The handler then calls RecaptchaConfig::verify($_POST['recaptcha-token']). ?>
 <?php if ($recaptcha['enabled'] ?? false): ?>
 <script src="https://www.google.com/recaptcha/api.js?render=<?php echo \htmlspecialchars($recaptcha['siteKey'] ?? ''); ?>"></script>
-<script>
+<script nonce="<?= $cspNonce ?? '' ?>">
 (function() {
 	var siteKey = '<?php echo \htmlspecialchars($recaptcha['siteKey'] ?? '', ENT_QUOTES); ?>';
 
