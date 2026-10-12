@@ -6,10 +6,10 @@
 // fetched (action "submit"), written into that field, then the form submits
 // for real. The handler then calls RecaptchaConfig::verify($_POST['recaptcha-token']). ?>
 <?php if ($recaptcha['enabled'] ?? false): ?>
-<script src="https://www.google.com/recaptcha/api.js?render=<?php echo \htmlspecialchars($recaptcha['siteKey'] ?? ''); ?>"></script>
+<script src="https://www.google.com/recaptcha/api.js?render=<?php echo \htmlspecialchars(\rawurlencode((string) ($recaptcha['siteKey'] ?? ''))); ?>"></script>
 <script nonce="<?= $cspNonce ?? '' ?>">
 (function() {
-	var siteKey = '<?php echo \htmlspecialchars($recaptcha['siteKey'] ?? '', ENT_QUOTES); ?>';
+	var siteKey = <?php echo \json_encode((string) ($recaptcha['siteKey'] ?? ''), JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT); ?>;
 
 	document.addEventListener('submit', function(event) {
 		var field = event.target.querySelector('#recaptcha-token');
