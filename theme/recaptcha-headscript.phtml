@@ -4,7 +4,8 @@
 // Contract: any <form> containing <input type="hidden" id="recaptcha-token"
 // name="recaptcha-token"> gets intercepted on submit - a fresh v3 token is
 // fetched (action "submit"), written into that field, then the form submits
-// for real. The handler then calls RecaptchaConfig::verify($_POST['recaptcha-token']). ?>
+// for real. The handler then calls RecaptchaConfig::verify($_POST['recaptcha-token']). A form that fires the
+// form.widget hook gets that field from RecaptchaHooks::widget(). ?>
 <?php if ($recaptcha['enabled'] ?? false): ?>
 <script src="https://www.google.com/recaptcha/api.js?render=<?php echo \htmlspecialchars(\rawurlencode((string) ($recaptcha['siteKey'] ?? ''))); ?>"></script>
 <script nonce="<?= $cspNonce ?? '' ?>">
@@ -14,6 +15,7 @@
 	document.addEventListener('submit', function(event) {
 		var field = event.target.querySelector('#recaptcha-token');
 		if (!field || field.dataset.recaptchaDone) return;
+		if (typeof grecaptcha === 'undefined') return; // Script blocked: post without a token (the server decides) rather than trap the visitor
 
 		event.preventDefault();
 		grecaptcha.ready(function() {

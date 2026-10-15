@@ -57,43 +57,61 @@ class RecaptchaConfig
     }
 
     /**
-     * Verify a submitted token against Google's siteverify endpoint and
-     * check its score against the configured threshold. Unlike Turnstile's
-     * pass/fail, v3 returns a 0.0-1.0 bot-likelihood score - below the
-     * threshold is treated as a failed verification here so callers get the
-     * same simple bool contract.
+     * Verify a submitted token against Google's siteverify endpoint and check its score against the configured
+     * threshold. Unlike Turnstile's pass/fail, v3 returns a 0.0-1.0 bot-likelihood score - below the threshold is
+     * treated as a failed verification here so callers get the same simple bool contract.
      */
     public static function verify(string $token): bool
     {
+        return self::check($token) === RecaptchaOutcome::PASSED;
+    }
+
+    /**
+     * Ask Google about a token and say what came of it (a RecaptchaOutcome constant). Google's own error codes (a wrong
+     * secret key, a hostname that does not match) and a failing score go to the error log.
+     */
+    public static function check(string $token): string
+    {
         $config = self::get();
+        $threshold = (float) ($config->scoreThreshold ?? 0.5);
 
-        $tokenMissing = $token === '' || empty($config->secretKey ?? '');
-        if ($tokenMissing) return false;
+        $noSecret = empty($config->secretKey ?? '');
+        if ($noSecret) return RecaptchaOutcome::classify(token: $token, response: null, threshold: $threshold);
 
+        $noToken = $token === '';
+        if ($noToken) return RecaptchaOutcome::MISSING;
+
+        $response = self::askGoogle(secretKey: (string) $config->secretKey, token: $token);
+
+        $outcome = RecaptchaOutcome::classify(token: $token, response: $response, threshold: $threshold);
+        $bad = $outcome !== RecaptchaOutcome::PASSED;
+        if ($bad) \error_log('reCAPTCHA check ' . $outcome . ': ' . \json_encode($response['error-codes'] ?? ['score' => $response['score'] ?? null, 'threshold' => $threshold]));
+
+        return $outcome;
+    }
+
+    /** @return ?array<string, mixed> Google's decoded answer, or null when it could not be asked */
+    private static function askGoogle(string $secretKey, string $token): ?array
+    {
         $ch = \curl_init(self::SITEVERIFY_URL);
         \curl_setopt_array($ch, [
             CURLOPT_POST => true,
             CURLOPT_POSTFIELDS => \http_build_query([
-                'secret' => $config->secretKey,
+                'secret' => $secretKey,
                 'response' => $token,
             ]),
             CURLOPT_RETURNTRANSFER => true,
             CURLOPT_TIMEOUT => 10,
         ]);
 
-        $response = \curl_exec($ch);
+        $body = \curl_exec($ch);
         $curlError = \curl_error($ch);
-        if ($curlError) return false;
+        \curl_close($ch);
+        if ($curlError || !\is_string($body)) return null;
 
-        $decoded = \json_decode($response, associative: true);
+        $decoded = \json_decode($body, associative: true);
 
-        $succeeded = (bool) ($decoded['success'] ?? false);
-        if (!$succeeded) return false;
-
-        $score = (float) ($decoded['score'] ?? 0.0);
-        $threshold = (float) ($config->scoreThreshold ?? 0.5);
-
-        return $score >= $threshold;
+        return \is_array($decoded) ? $decoded : null;
     }
 
     private static function defaults(): object
