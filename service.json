@@ -1,11 +1,11 @@
 {
     "id": "recaptcha",
     "name": "Google reCAPTCHA v3",
-    "version": "1.1.4",
+    "version": "1.1.5",
     "description": "Spam protection for forms via Google reCAPTCHA v3 - score-based, invisible by default, admin-editable site/secret key and score threshold",
     "category": "security-privacy",
     "website": "https://www.google.com/recaptcha/about/",
-    "account": {"required": "free"},
+    "account": {"required": "free", "note": "Free up to 10,000 assessments a month; above that the Google Cloud project needs billing enabled."},
     "author": {
         "name": "Gavin Cox"
     },
