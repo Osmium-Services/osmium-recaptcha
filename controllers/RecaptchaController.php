@@ -56,6 +56,12 @@ class RecaptchaController extends AdminController
         $postedSecretKey = \trim($_POST['secret_key'] ?? '');
         $secretKey = $postedSecretKey === '' ? (string) (RecaptchaConfig::get()->secretKey ?? '') : $postedSecretKey;
 
+        $enabledWithoutSecret = $enabled && $secretKey === '';
+        if ($enabledWithoutSecret) {
+            $_SESSION['recaptcha_settings_error'] = 'Enter the secret key before switching reCAPTCHA on, otherwise forms would not be protected.';
+            $this->redirect('settings/recaptcha/');
+        }
+
         $scoreThreshold = (float) ($_POST['score_threshold'] ?? 0.5);
         $thresholdOutOfRange = $scoreThreshold < 0.0 || $scoreThreshold > 1.0;
         if ($thresholdOutOfRange) $scoreThreshold = 0.5;
