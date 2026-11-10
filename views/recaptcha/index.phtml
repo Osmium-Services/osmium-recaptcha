@@ -21,16 +21,20 @@
     </div>
 <?php endif; ?>
 
-<div class="alert alert-warning" role="alert">
-    As of April 2026, Google's free tier is 10,000 assessments/month and requires a Google Cloud
-    project with billing enabled. <a href="<?= $admin['basePath'] ?>settings/turnstile/">Cloudflare Turnstile</a>
-    is a free, unlimited alternative with the same <code>verify($token)</code> contract.
+<div class="row justify-content-center">
+    <div class="col-lg-4">
+        <div class="alert alert-warning" role="alert">
+            As of April 2026, Google's free tier is 10,000 assessments/month and requires a Google Cloud
+            project with billing enabled. <a href="<?= $admin['basePath'] ?>settings/turnstile/">Cloudflare Turnstile</a>
+            is a free, unlimited alternative with the same <code>verify($token)</code> contract.
+        </div>
+    </div>
 </div>
 
 <form method="POST" action="<?= $admin['basePath'] ?>settings/recaptcha/" id="settings-form">
     <input type="hidden" name="token" value="<?= $template['formToken'] ?? '' ?>">
     <div class="row justify-content-center">
-        <div class="col-lg-6">
+        <div class="col-lg-4">
             <div class="card mb-4">
                 <div class="card-header">
                     <h5 class="mb-0"><i class="bx bx-shield-quarter me-2"></i>Google reCAPTCHA v3</h5>
