@@ -1,6 +1,7 @@
 ---
 title: Protect your forms with Google reCAPTCHA
 tags: recaptcha, google, captcha, spam, bots, score, forms
+page: admin/settings/recaptcha
 ---
 
 **Google reCAPTCHA v3** scores each form submission, invisibly, on how likely it is to be a human.
